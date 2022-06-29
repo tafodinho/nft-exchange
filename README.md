@@ -1,2 +1,2 @@
 # nft-exchange
-An offchain NFT exchange where tokens can be exchanged for one another
+An offchain NFT exchange/Market-place, where tokens can be exchanged for one another
