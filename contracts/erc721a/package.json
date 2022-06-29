@@ -1,0 +1,74 @@
+{
+  "_from": "erc721a",
+  "_id": "erc721a@4.0.0",
+  "_inBundle": false,
+  "_integrity": "sha512-FXlJ3owiDWGQleXV5t1aE5fgMpzCaP5ZMg9ZamP1Xv4p6JdCj3QlKQDvP8BvT+Jn7p4TtqTcHNUMfh+xoHGhGw==",
+  "_location": "/erc721a",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "erc721a",
+    "name": "erc721a",
+    "escapedName": "erc721a",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/erc721a/-/erc721a-4.0.0.tgz",
+  "_shasum": "df9427ffa24c998fb33610bc558febfd932ec8d1",
+  "_spec": "erc721a",
+  "_where": "/Users/macbookpro/Projects/NFT/NFTExchange",
+  "author": {
+    "name": "chiru-labs"
+  },
+  "bugs": {
+    "url": "https://github.com/chiru-labs/ERC721A/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "ERC721A contract for Solidity",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/test-helpers": "^0.5.15",
+    "chai": "^4.3.4",
+    "eslint": "^8.7.0",
+    "eslint-plugin-mocha": "^10.0.3",
+    "eslint-plugin-node": "^11.1.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.3",
+    "hardhat": "^2.8.2",
+    "hardhat-gas-reporter": "^1.0.7",
+    "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solidity-coverage": "^0.7.20"
+  },
+  "files": [
+    "/contracts/**/*.sol",
+    "/build/contracts/*.json",
+    "!/contracts/mocks/**/*"
+  ],
+  "homepage": "https://github.com/chiru-labs/ERC721A#readme",
+  "license": "ISC",
+  "name": "erc721a",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiru-labs/ERC721A.git"
+  },
+  "scripts": {
+    "coverage": "REPORT_COVERAGE=true npx hardhat coverage",
+    "lint": "npm run lint:js && npm run lint:sol",
+    "lint:js": "eslint --ignore-path .gitignore . --fix",
+    "lint:sol": "prettier --write \"contracts/**/*.sol\"",
+    "node": "hardhat node",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true npx hardhat test",
+    "update-version": "scripts/release/update-version.js"
+  },
+  "version": "4.0.0"
+}
