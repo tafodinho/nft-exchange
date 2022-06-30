@@ -13,6 +13,7 @@
 - Signed orders are being saved on both the Ox order book and on a local order book hosted on my DynamoDb database on AWS
 - All backend endpoints are build with NodeJs and aws Lamba(serverless) for reduced cost as well
 as I hosted the static website on S3 which makes it even a lot more cheaper.
+- Link to my backend code can be found at (https://github.com/tafodinho/nft-exchange-api)
 
 ### Screenshot
 ![Image text](https://www.united-internet.de/fileadmin/user_upload/Brands/Downloads/Logo_IONOS_by.jpg)
