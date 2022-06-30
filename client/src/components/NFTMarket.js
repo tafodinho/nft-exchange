@@ -14,7 +14,7 @@ const  NFTMarket = ({nftList, buyNftApiCall}) => {
     return <div class="col">
         <div className="nft-card-buy card" style={{background: color}}>
           <span>{item.nftTokenId}</span>
-          <p>price: {item.tokenAmount} MYT</p>
+          <p>price: {item.tokenAmount} MYTN</p>
           <div class="card-footer" onClick={() => buyNftApiCall(item)}>
             <h5 class="card-title">Buy NFT </h5>
           </div>

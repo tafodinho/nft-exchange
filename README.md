@@ -7,7 +7,10 @@
 
 ### General Info
 ***
-- Nft-Echange is n offchain NFT Market-place, where NFT's can be swaped for MYTN(which is and ERC20 token)
+- Nft-Echange is n offchain NFT Market-place, where NFT's can be swaped for MYTN(which is and ERC20 token). 
+Users can mint NFT tokens for free, Users can list those NFTs for sale and other Users who have the MyToken can 
+fill those others to buy the NFT on sale. Users can also cancel NFT's that have been put on sale. Users Can also
+mint MyToken for free.
 - The deployed application can be found at (http://nft-exchange.s3-website-us-east-1.amazonaws.com)
 - The smart contracts are deployed to the ropsten testnetwork 
 - Signed orders are being saved on both the Ox order book and on a local order book hosted on my DynamoDb database on AWS
