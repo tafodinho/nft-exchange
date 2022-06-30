@@ -40,6 +40,7 @@
       }
     }
     .right-header {
+      display: flex;
       margin-right: 2em;
       button {
         padding: .7em 1.2em;
@@ -51,6 +52,16 @@
         &:hover {
           cursor: pointer;
           background: #219e5b;
+        }
+      }
+      .header-token-info {
+        display: flex;
+        flex-direction: column;
+        margin-right: 1em;
+        margin-left: 1em;
+        align-items: baseline;
+        p {
+          margin: 0;
         }
       }
     }

@@ -44,12 +44,16 @@ class App extends Component {
       const onboardButton = this.connectButton.current;
       console.log(onboardButton, onboardButton.baseURI);
       const { ethereum } = window;
+
       ethereum.on("chainChanged", () => {
         window.location.reload();
       });
+
       ethereum.on("accountsChanged", () => {
         window.location.reload();
       });
+
+      
 
       //Created check function to see if the MetaMask extension is installed
       const isMetaMaskInstalled = () => {
@@ -132,39 +136,65 @@ class App extends Component {
   };
 
   getAll = async () => {
-    const { accounts, contracts, web3 } = this.state;
-    console.log(contracts, web3.currentProvider.constructor.name);
-    const address = web3.utils.toChecksumAddress(accounts[0]);
-    const response = await contracts.MyNFTContract.methods.balanceOf(address).call();
-    const response1 = await contracts.MyTokenContract.methods.balanceOf(address).call();
-    this.loadNftsOnSale()
-    this.getOwnerTokens()
-    this.setState({ totalNFT: response, totalToken: response1, showLoading: false });
+    const totalNfts = await this.getNftBalance()
+    const totalToken = await this.getTokenBalance()
+    const nftsOnSale = await this.loadNftsOnSaleApi()
+    const nftList = await this.getOwnerTokensCall()
+    this.setState({ 
+      totalNFT: totalNfts, 
+      totalToken: totalToken, 
+      showLoading: false, 
+      nftList: nftList, 
+      nftsOnSale: nftsOnSale.data
+    });
   };
 
   mintNFT = async (amount) => {
-    const { accounts, contracts } = this.state;
-    await contracts.MyNFTContract.methods.mint(parseInt(amount)).send({ from: accounts[0], gas: 150000 });
-    this.getAll();
-  }
-
-  getOwnerTokens = async () => {
+    this.setState({showLoading: true})
     const { accounts, contracts, web3 } = this.state;
     const address = web3.utils.toChecksumAddress(accounts[0]);
-    const response = await contracts.MyNFTContract.methods.tokensOfOwner(address).call();
-    console.log(response)
-    this.setState({ownedNFTs: response, curView: "NFTs"})
-    
+    await contracts.MyNFTContract.methods.mint(parseInt(amount)).send({ from: address, gas: 150000 });
+    const response = await contracts.MyNFTContract.methods.balanceOf(address).call();
+    this.setState({ showLoading: false, totalNFT: response,});
   }
 
   mintTokens = async (amount) => {
+    this.setState({showLoading: true})
     const { accounts, contracts, web3 } = this.state;
-    await contracts.MyTokenContract.methods.mint(parseInt(amount)).send({from: accounts[0], gas: 150000});
-    this.getAll();
+    const address = web3.utils.toChecksumAddress(accounts[0]);
+    await contracts.MyTokenContract.methods.mint(parseInt(amount)).send({from: address, gas: 150000});
+    const response = await contracts.MyTokenContract.methods.balanceOf(address).call();
+    this.setState({showLoading: false, totalToken: response})
   }
 
-  loadNftsOnSale = async () => {
+  getOwnerTokensCall = async () => {
     const { accounts, contracts, web3 } = this.state;
+    const address = web3.utils.toChecksumAddress(accounts[0]);
+    const response = await contracts.MyNFTContract.methods.tokensOfOwner(address).call();
+    return response
+  }
+
+  getOwnerTokens = async () => {
+    this.setState({showLoading: true})
+    const response = await this.getOwnerTokensCall()
+    this.setState({ownedNFTs: response, curView: "NFTs", showLoading: false})
+  }
+
+  getNftBalance = async () => {
+    const { accounts, contracts, web3 } = this.state;
+    const address = web3.utils.toChecksumAddress(accounts[0]);
+    const response = await contracts.MyNFTContract.methods.balanceOf(address).call();
+    return response
+  }
+
+  getTokenBalance = async () => {
+    const { accounts, contracts, web3 } = this.state;
+    const address = web3.utils.toChecksumAddress(accounts[0]);
+    const response = await contracts.MyTokenContract.methods.balanceOf(address).call();
+    return response
+  }
+
+  loadNftsOnSaleApi = async () => {
     const baseURL = "https://sjv9oce4h2.execute-api.us-east-1.amazonaws.com/api"
     try {
       const response = await axios({
@@ -173,16 +203,22 @@ class App extends Component {
         url: '/orders',
       });
       console.log(response);
-      this.setState({nftsOnSale: response.data, curView: "listedNFTs"})
+      return response
     } catch (error) {
       console.error(error);
     }
-    
+  }
+
+  loadNftsOnSale = async () => {
+    this.setState({showLoading: true})
+    const response = await this.loadNftsOnSaleApi()
+    console.log("RESPONSE", response)
+    this.setState({showLoading: false, nftsOnSale: response.data, curView: "listedNFTs"})
   }
 
   sellNftApiCall = async (amount, itemId) => {
-    const { accounts, contracts, web3 } = this.state;
     this.setState({showLoading: true})
+    const { accounts, contracts, web3 } = this.state;
     const baseURL = "https://sjv9oce4h2.execute-api.us-east-1.amazonaws.com/api"
     const provider = new Web3Provider(window.ethereum);
     const signer = provider.getSigner();
@@ -210,37 +246,39 @@ class App extends Component {
       type: item.tokenType,
     };
     const nftSdk = new NftSwapV4(provider, signer, CHAIN_ID);
-    await nftSdk.approveTokenOrNftByAsset(MYNFT, item.userAddress);
-    const order = nftSdk.buildOrder(
-      // I am offering an NFT (CryptoCoven #9757)
-      MYNFT,
-      // I will receive an ERC20 (5,000 of USDC)
-      TOKEN,
-      // My wallet address
-      item.userAddress
-    );
-     
-    const signedOrder = await nftSdk.signOrder(order);
-     
-    const postedOrder = await nftSdk.postOrder(signedOrder, CHAIN_ID);
-    console.log("ORDER BOOK RESULT", postedOrder);
+    
     try {
+      await nftSdk.approveTokenOrNftByAsset(MYNFT, item.userAddress);
+      const order = nftSdk.buildOrder(
+        // I am offering an NFT (CryptoCoven #9757)
+        MYNFT,
+        // I will receive an ERC20 (5,000 of USDC)
+        TOKEN,
+        // My wallet address
+        item.userAddress
+      );
+      
+      const signedOrder = await nftSdk.signOrder(order);
+      
+      const postedOrder = await nftSdk.postOrder(signedOrder, CHAIN_ID);
       const response = await axios({
         baseURL: baseURL,
         method: 'POST',
         url: '/order',
         data: item
       });
-      this.getOwnerTokens()
-      this.setState({showLoading: false, showAlert: true, alertMessage: "Nft placed in market"})
+      const nftList = await this.loadNftsOnSaleApi()
+      this.setState({showLoading: false, showAlert: true, alertMessage: "Nft placed in market", nftsOnSale: nftList.data})
       console.log(response);
     } catch (error) {
+      this.setState({showLoading: false})
       console.error(error);
     }
   }
 
 
   buyNftApiCall = async (order) => {
+    this.setState({showLoading: true})
     const { accounts, web3 } = this.state;
     this.setState({showLoading: true})
     const provider = new Web3Provider(window.ethereum);
@@ -264,13 +302,15 @@ class App extends Component {
     const foundOrder = orders.orders
     // Fill order :)
     console.log("FOUND ORDERS", foundOrder)
-    await nftSwap.approveTokenOrNftByAsset(TOKEN, accounts[0]);
     try {
+      await nftSwap.approveTokenOrNftByAsset(TOKEN, accounts[0]);
       const fillTx = await nftSwap.fillSignedOrder(foundOrder[0].order);
       const fillTxReceipt = await nftSwap.awaitTransactionHash(fillTx.hash);
-      this.deleteOrder(order.id);
-      this.setState({showLoading: false})
-      this.loadNftsOnSale()
+      this.deleteOrderApi(order.id);
+      const response = await this.loadNftsOnSaleApi()
+      const nftCount = await this.getNftBalance()
+      const tokenCount = await this.getTokenBalance()
+      this.setState({showLoading: false, nftsOnSale: response.data, totalNFT: nftCount, totalToken: tokenCount})
       console.log(`🎉 🥳 Order filled. TxHash: ${fillTxReceipt.transactionHash}`)
     } catch (error) {
       this.setState({showLoading: false});
@@ -278,7 +318,7 @@ class App extends Component {
     }
   }
 
-  deleteOrder = async (id) => {
+  deleteOrderApi = async (id) => {
     const baseURL = "https://sjv9oce4h2.execute-api.us-east-1.amazonaws.com/api"
     try {
       const response = await axios({
@@ -286,15 +326,21 @@ class App extends Component {
         method: 'DELETE',
         url: `/order/${id}`,
       });
-      this.setState({showAlert: true, alertMessage: "Dellete success"})
       console.log(response);
     } catch (error) {
       console.error(error);
     }
   }
+  
+  deleteOrder = async (id) => {
+    this.setState({showLoading: true})
+    this.deleteOrderApi(id)
+    const nftList = await this.getOwnerTokensCall()
+    this.setState({showAlert: true, alertMessage: "Dellete success", showLoading: false, nftList: nftList})
+  }
 
   closeAlert = () => {
-    this.setState({showAlert: !this.state.showAlert})
+    this.setState({showAlert: false})
   }
 
   openTokenInfo = async () => {
@@ -312,14 +358,16 @@ class App extends Component {
             nftList={this.state.ownedNFTs}
             compList={this.state.nftsOnSale}
             sellNftApiCall={this.sellNftApiCall} 
-            deleteOrder={this.deleteOrder} /> 
+            deleteOrder={this.deleteOrder}
+            setState={this.setState} /> 
           break
         }
         case "listedNFTs": {
           body = <NFTMarket 
             nftList={this.state.nftsOnSale}
             compList={this.state.ownedNFTs}
-            buyNftApiCall={this.buyNftApiCall} />
+            buyNftApiCall={this.buyNftApiCall}
+            setState={this.setState} />
           break
         } 
         case "tokensInfo": {
@@ -327,8 +375,8 @@ class App extends Component {
             numberOfNfts={this.state.totalNFT}
             numberOfTokens={this.state.totalToken}
             mintNFT={this.mintNFT}
-            mintTokens={this.mintTokens} 
-            getOwnerTokens={this.getOwnerTokens} />
+            mintTokens={this.mintTokens}
+            setState={this.setState} />
           break
         }
         case "transferTokens": {
@@ -348,13 +396,17 @@ class App extends Component {
               <ul className="menu">
                 <li className={`menu-item ${this.state.curView == "listedNFTs" ? "active" : ""}`} onClick={() => this.loadNftsOnSale()}>NFTs Market</li>
                 <li className={`menu-item ${this.state.curView == "NFTs" ? "active" : ""}`} onClick={() => this.getOwnerTokens()}>My NFTs</li>
-                <li className={`menu-item ${this.state.curView == "tokensInfo" ? "active" : ""}`} onClick={() => this.openTokenInfo()}>Tokens info</li>
+                <li className={`menu-item ${this.state.curView == "tokensInfo" ? "active" : ""}`} onClick={() => this.openTokenInfo()}>Mint Tokens</li>
               </ul>
             </div>}
-            <Alert show={this.state.showAlert} variant="primary" onClose={() => this.closeAlert()} dismissible>
+            <Alert show={this.state.showAlert} variant="success" onClose={() => this.closeAlert()} dismissible>
               {this.state.alertMessage}
             </Alert>
             <div className="right-header">
+              <div className="header-token-info">
+                <p># NFTs: {this.state.totalNFT}</p>
+                <p># MYTN: {this.state.totalToken}</p>
+              </div>
               <button id="connect-button" ref={this.connectButton}>{this.state.connectState}</button>
             </div>
           </div>

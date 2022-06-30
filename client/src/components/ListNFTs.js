@@ -14,7 +14,7 @@ const ListNFT = ({
   nftList, 
   compList,
   sellNftApiCall,
-  deleteOrder
+  deleteOrder,
 }) => {
   const [show, setShow] = React.useState(false);
   const [item, setItem] = React.useState('')

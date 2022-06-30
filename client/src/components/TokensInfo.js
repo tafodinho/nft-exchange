@@ -23,14 +23,12 @@ const TokensInfo = ({
   const handleSubmitNft = (event) => {
     event.preventDefault();
     handleCloseNft();
-    // sellNftApiCall(event.target[1].value, item);
     mintNFT(event.target[1].value);
   }
 
   const handleSubmitToken = (event) => {
     event.preventDefault();
     handleCloseToken();
-    // sellNftApiCall(event.target[1].value, item);
     mintTokens(event.target[1].value);
   }
 
